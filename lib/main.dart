@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'country.dart';
@@ -63,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     futureCountries = loadCountries(http.Client());
   }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -89,7 +92,24 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('An error has occurred!'),
             );
           } else if (snapshot.hasData) {
-            return CountryList(countries: snapshot.data!);
+            var randomCountries = [
+              snapshot.data![Random().nextInt(snapshot.data!.length)],
+              snapshot.data![Random().nextInt(snapshot.data!.length)],
+              snapshot.data![Random().nextInt(snapshot.data!.length)]
+            ];
+            var randomCountry = Random().nextInt(3);
+            return Center(
+                child: Column(children: <Widget>[
+              TextButton(
+                  onPressed: () {},
+                  child: Text(randomCountries[randomCountry].name)),
+              Image.network(
+                  "https://flagcdn.com/144x108/${randomCountries[0].code.toLowerCase()}.png"),
+              Image.network(
+                  "https://flagcdn.com/144x108/${randomCountries[1].code.toLowerCase()}.png"),
+              Image.network(
+                  "https://flagcdn.com/144x108/${randomCountries[2].code.toLowerCase()}.png")
+            ]));
           } else {
             return const Center(
               child: CircularProgressIndicator(),
