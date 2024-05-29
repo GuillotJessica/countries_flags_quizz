@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -92,23 +93,34 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text('An error has occurred!'),
             );
           } else if (snapshot.hasData) {
-            var randomCountries = [
-              snapshot.data![Random().nextInt(snapshot.data!.length)],
-              snapshot.data![Random().nextInt(snapshot.data!.length)],
-              snapshot.data![Random().nextInt(snapshot.data!.length)]
-            ];
-            var randomCountry = Random().nextInt(3);
+            final List<int> randIndexes = [];
+            while (randIndexes.length < 3) {
+              int i = Random().nextInt(snapshot.data!.length);
+              if (!randIndexes.contains(i)) {
+                randIndexes.add(i);
+              }
+            }
+            int randomCountry = Random().nextInt(3);
             return Center(
                 child: Column(children: <Widget>[
-              TextButton(
-                  onPressed: () {},
-                  child: Text(randomCountries[randomCountry].name)),
-              Image.network(
-                  "https://flagcdn.com/144x108/${randomCountries[0].code.toLowerCase()}.png"),
-              Image.network(
-                  "https://flagcdn.com/144x108/${randomCountries[1].code.toLowerCase()}.png"),
-              Image.network(
-                  "https://flagcdn.com/144x108/${randomCountries[2].code.toLowerCase()}.png")
+              Text(snapshot.data![randIndexes[randomCountry]].name, style: const TextStyle(fontSize: 50)),
+              Flexible(
+                child: ListView.builder(
+                    itemCount: 3,
+                    shrinkWrap: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      final item =
+                          snapshot.data![randIndexes[index]].code.toLowerCase();
+                      return GestureDetector(
+                        onTap: () {},
+                        child: Image.network(
+                            "https://flagcdn.com/144x108/${item}.png",
+                            width: 300,
+                            height: 150,
+                            fit: BoxFit.contain),
+                      );
+                    }),
+              )
             ]));
           } else {
             return const Center(
