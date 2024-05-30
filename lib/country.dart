@@ -48,16 +48,35 @@ class Country {
   }
 }
 
-class QuizzCard extends StatelessWidget {
-  const QuizzCard({super.key, required this.countries});
+class QuizzCard extends StatefulWidget {
+  const QuizzCard({
+    super.key,
+    required this.countries,
+    this.child,
+  });
 
   final List<Country> countries;
+  final Widget? child;
+
+  @override
+  State<QuizzCard> createState() => _QuizzCard();
+}
+
+enum StatusEnum { zero, one, two }
+
+class _QuizzCard extends State<QuizzCard> {
+  StatusEnum _status = StatusEnum.zero;
+  void updateStatus(StatusEnum newStatus) {
+    setState(() {
+      _status = newStatus;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final List<int> randIndexes = [];
     while (randIndexes.length < 3) {
-      int i = Random().nextInt(countries.length);
+      int i = Random().nextInt(widget.countries.length);
       if (!randIndexes.contains(i)) {
         randIndexes.add(i);
       }
@@ -65,20 +84,42 @@ class QuizzCard extends StatelessWidget {
     int randomCountry = Random().nextInt(3);
     return Center(
         child: Column(children: <Widget>[
-      Text(countries[randIndexes[randomCountry]].name,
+      Text(widget.countries[randIndexes[randomCountry]].name,
           style: const TextStyle(fontSize: 50)),
       Flexible(
-        child: ListView.builder(
-            itemCount: 3,
-            shrinkWrap: true,
-            itemBuilder: (BuildContext context, int index) {
-              final item = countries[randIndexes[index]].code.toLowerCase();
-              return GestureDetector(
-                onTap: () {},
-                child: Image.network("https://flagcdn.com/144x108/$item.png",
-                    width: 300, height: 150, fit: BoxFit.contain),
-              );
-            }),
+          child: ListView.builder(
+              itemCount: 3,
+              shrinkWrap: true,
+              itemBuilder: (BuildContext context, int index) {
+                final item =
+                    widget.countries[randIndexes[index]].code.toLowerCase();
+                return GestureDetector(
+                  onTap: () {
+                    if (item ==
+                        widget.countries[randIndexes[randomCountry]].code
+                            .toLowerCase()) {
+                      updateStatus(StatusEnum.one);
+                    } else {
+                      updateStatus(StatusEnum.two);
+                    }
+                  },
+                  child: Container(
+                      color: Colors.blue[200],
+                      padding: const EdgeInsets.all(3),
+                      child: Image.network(
+                        "https://flagcdn.com/144x108/$item.png",
+                        width: 300,
+                        height: 150,
+                        fit: BoxFit.contain,
+                      )),
+                );
+              })),
+      Container(
+        child: switch (_status) {
+          StatusEnum.zero => const Text("Pick a flag"),
+          StatusEnum.one => const Text("Correct"),
+          StatusEnum.two => const Text("Wrong"),
+        },
       )
     ]));
   }
