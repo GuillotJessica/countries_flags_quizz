@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -44,5 +45,41 @@ class Country {
       french: json['french'] as String,
       continent: json['continent'] as String,
     );
+  }
+}
+
+class QuizzCard extends StatelessWidget {
+  const QuizzCard({super.key, required this.countries});
+
+  final List<Country> countries;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<int> randIndexes = [];
+    while (randIndexes.length < 3) {
+      int i = Random().nextInt(countries.length);
+      if (!randIndexes.contains(i)) {
+        randIndexes.add(i);
+      }
+    }
+    int randomCountry = Random().nextInt(3);
+    return Center(
+        child: Column(children: <Widget>[
+      Text(countries[randIndexes[randomCountry]].name,
+          style: const TextStyle(fontSize: 50)),
+      Flexible(
+        child: ListView.builder(
+            itemCount: 3,
+            shrinkWrap: true,
+            itemBuilder: (BuildContext context, int index) {
+              final item = countries[randIndexes[index]].code.toLowerCase();
+              return GestureDetector(
+                onTap: () {},
+                child: Image.network("https://flagcdn.com/144x108/$item.png",
+                    width: 300, height: 150, fit: BoxFit.contain),
+              );
+            }),
+      )
+    ]));
   }
 }
