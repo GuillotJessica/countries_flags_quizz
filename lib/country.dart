@@ -9,9 +9,15 @@ import 'package:http/http.dart' as http;
 
 Future<List<Country>> loadCountries(http.Client client) async {
   String jsonString = await rootBundle.loadString('countries.json');
-
   // Use the compute function to run parsePhotos in a separate isolate.
   return compute(parseCountries, jsonString);
+}
+
+Future<List<List<Country>>> createCountriesQuizz(int size) async {
+  var countries = await loadCountries(http.Client());
+  List<Country> quizz(int i) => List<Country>.generate(
+      3, (i) => countries[Random().nextInt(countries.length)]);
+  return List<List<Country>>.generate(10, quizz);
 }
 
 // A function that converts a response body into a List<Photo>.
@@ -48,63 +54,38 @@ class Country {
   }
 }
 
-class QuizzCard extends StatefulWidget {
+class QuizzCard extends StatelessWidget {
   const QuizzCard({
     super.key,
     required this.countries,
+    required this.update,
     this.child,
   });
-
+//QuizzCard
   final List<Country> countries;
+  final Function update;
   final Widget? child;
-
-  @override
-  State<QuizzCard> createState() => _QuizzCard();
-}
-
-enum StatusEnum { zero, one, two }
-
-class _QuizzCard extends State<QuizzCard> {
-  StatusEnum _status = StatusEnum.zero;
-  void updateStatus(StatusEnum newStatus) {
-    setState(() {
-      _status = newStatus;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final List<int> randIndexes = [];
-    while (randIndexes.length < 3) {
-      int i = Random().nextInt(widget.countries.length);
-      if (!randIndexes.contains(i)) {
-        randIndexes.add(i);
-      }
-    }
-    int randomCountry = Random().nextInt(3);
-    return Center(
+    Country randTitle = countries[Random().nextInt(countries.length)];
+    return Container(
+        alignment: Alignment.center,
+        width: MediaQuery.of(context).size.width * 0.5,
+        color: Colors.white,
         child: Column(children: <Widget>[
-      Text(widget.countries[randIndexes[randomCountry]].name,
-          style: const TextStyle(fontSize: 50)),
-      Flexible(
-          child: ListView.builder(
+          Expanded(
+              child:
+                  Text(randTitle.name, style: const TextStyle(fontSize: 50))),
+          ListView.builder(
               itemCount: 3,
               shrinkWrap: true,
               itemBuilder: (BuildContext context, int index) {
-                final item =
-                    widget.countries[randIndexes[index]].code.toLowerCase();
+                final item = countries[index].code.toLowerCase();
                 return GestureDetector(
                   onTap: () {
-                    if (item ==
-                        widget.countries[randIndexes[randomCountry]].code
-                            .toLowerCase()) {
-                      updateStatus(StatusEnum.one);
-                    } else {
-                      updateStatus(StatusEnum.two);
-                    }
+                    update(item == randTitle.code.toLowerCase());
                   },
                   child: Container(
-                      color: Colors.blue[200],
                       padding: const EdgeInsets.all(3),
                       child: Image.network(
                         "https://flagcdn.com/144x108/$item.png",
@@ -113,14 +94,7 @@ class _QuizzCard extends State<QuizzCard> {
                         fit: BoxFit.contain,
                       )),
                 );
-              })),
-      Container(
-        child: switch (_status) {
-          StatusEnum.zero => const Text("Pick a flag"),
-          StatusEnum.one => const Text("Correct"),
-          StatusEnum.two => const Text("Wrong"),
-        },
-      )
-    ]));
+              }),
+        ]));
   }
 }

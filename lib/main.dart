@@ -1,5 +1,6 @@
+import 'package:appinio_swiper/appinio_swiper.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'country.dart';
 
 void main() {
@@ -57,11 +58,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late Future<List<Country>> futureCountries;
+  final AppinioSwiperController controller = AppinioSwiperController();
+
+  late Future<List<List<Country>>> countriesQuizzList;
+  final List<int> randIndexes = [];
+
   @override
   void initState() {
     super.initState();
-    futureCountries = loadCountries(http.Client());
+    countriesQuizzList = createCountriesQuizz(10);
+  }
+
+  int _result = 0;
+
+  void _update(bool bool) {
+    print(bool);
+    if (bool) {
+      setState(() => _result += 1);
+    } else {
+      Future.delayed(const Duration(seconds: 1)).then((_) {
+        _shakeCard();
+      });
+    }
+
+    controller.swipeLeft();
   }
 
   @override
@@ -82,15 +102,39 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: FutureBuilder<List<Country>>(
-        future: futureCountries,
+      body: FutureBuilder<List<List<Country>>>(
+        future: countriesQuizzList,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
               child: Text('An error has occurred!'),
             );
           } else if (snapshot.hasData) {
-            return QuizzCard(countries: snapshot.data!);
+            return CupertinoPageScaffold(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.75,
+                child: Container(
+                    alignment: Alignment.center,
+                    margin: const EdgeInsets.all(10),
+                    child: AppinioSwiper(
+                      onSwipeEnd: (int previousIndex, int targetIndex,
+                          SwiperActivity activity) {
+                        debugPrint('coucuo, $activity');
+                      },
+                      cardCount: 10,
+                      controller: controller,
+                      cardBuilder: (BuildContext context, int i) {
+                        return Container(
+                          alignment: Alignment.center,
+                          child: QuizzCard(
+                            countries: snapshot.data![i],
+                            update: _update,
+                          ),
+                        );
+                      },
+                    )),
+              ),
+            ); // QuizzCards(countries: snapshot.data!);
           } else {
             return const Center(
               child: CircularProgressIndicator(),
@@ -98,6 +142,28 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         },
       ),
+    );
+  }
+
+  Future<void> _shakeCard() async {
+    const double distance = 30;
+    // We can animate back and forth by chaining different animations.
+    await controller.animateTo(
+      const Offset(-distance, 0),
+      duration: const Duration(milliseconds: 50),
+      curve: Curves.easeInOut,
+    );
+    await controller.animateTo(
+      const Offset(distance, 0),
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeInOut,
+    );
+    // We need to animate back to the center because `animateTo` does not center
+    // the card for us.
+    await controller.animateTo(
+      const Offset(0, 0),
+      duration: const Duration(milliseconds: 50),
+      curve: Curves.easeInOut,
     );
   }
 }
