@@ -1,4 +1,5 @@
 import 'package:countries_flags_quizz/game/session.dart';
+import 'package:countries_flags_quizz/language.dart';
 import 'package:countries_flags_quizz/models/country.dart';
 import 'package:countries_flags_quizz/ui/flag_image.dart';
 import 'package:flutter/material.dart';
@@ -6,12 +7,14 @@ import 'package:flutter/material.dart';
 class PlayPage extends StatelessWidget {
   const PlayPage({
     super.key,
+    required this.copy,
     required this.game,
     required this.onPick,
     required this.onStop,
     this.flagBuilder,
   });
 
+  final QuizCopy copy;
   final GameSnapshot game;
   final ValueChanged<String> onPick;
   final VoidCallback onStop;
@@ -33,11 +36,11 @@ class PlayPage extends StatelessWidget {
                   TextButton(
                     key: const Key('stop-game'),
                     onPressed: onStop,
-                    child: const Text('Stop'),
+                    child: Text(copy.stop),
                   ),
                   const Spacer(),
                   Text(
-                    'Tries ${game.attempts}',
+                    copy.tries(game.attempts),
                     key: const Key('tries'),
                     style: text.titleMedium,
                   ),
@@ -46,7 +49,7 @@ class PlayPage extends StatelessWidget {
               const SizedBox(height: 4),
               _Progress(correct: game.correct, target: game.target),
               const SizedBox(height: 12),
-              Text('Which flag is this?', style: text.titleMedium),
+              Text(copy.whichFlag, style: text.titleMedium),
               const SizedBox(height: 4),
               SizedBox(
                 width: double.infinity,
@@ -54,7 +57,7 @@ class PlayPage extends StatelessWidget {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    prompt.name,
+                    prompt.nameIn(copy.language),
                     key: const Key('country-name'),
                     textAlign: TextAlign.center,
                     style: text.headlineMedium,
@@ -64,7 +67,7 @@ class PlayPage extends StatelessWidget {
               if (game.isRevealing) ...[
                 const SizedBox(height: 8),
                 Text(
-                  game.pickedTheRightFlag ? 'Yes' : 'Look at the green one',
+                  game.pickedTheRightFlag ? copy.yes : copy.lookAtTheGreenOne,
                   key: const Key('feedback'),
                   style: text.titleLarge?.copyWith(
                     color: game.pickedTheRightFlag
@@ -81,6 +84,7 @@ class PlayPage extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 960),
                     child: SizedBox.expand(
                       child: _Choices(
+                        copy: copy,
                         game: game,
                         onPick: onPick,
                         flagBuilder: flagBuilder,
@@ -128,11 +132,13 @@ class _Progress extends StatelessWidget {
 
 class _Choices extends StatelessWidget {
   const _Choices({
+    required this.copy,
     required this.game,
     required this.onPick,
     this.flagBuilder,
   });
 
+  final QuizCopy copy;
   final GameSnapshot game;
   final ValueChanged<String> onPick;
   final FlagBuilder? flagBuilder;
@@ -146,11 +152,17 @@ class _Choices extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8),
-                child: _FlagChoice(
-                  country: country,
-                  game: game,
-                  onPick: onPick,
-                  flagBuilder: flagBuilder,
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: _FlagChoice(
+                      country: country,
+                      game: game,
+                      copy: copy,
+                      onPick: onPick,
+                      flagBuilder: flagBuilder,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -174,12 +186,14 @@ class _FlagChoice extends StatelessWidget {
   const _FlagChoice({
     required this.country,
     required this.game,
+    required this.copy,
     required this.onPick,
     this.flagBuilder,
   });
 
   final Country country;
   final GameSnapshot game;
+  final QuizCopy copy;
   final ValueChanged<String> onPick;
   final FlagBuilder? flagBuilder;
 
@@ -196,7 +210,7 @@ class _FlagChoice extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: 'Flag of ${country.name}',
+      label: copy.flagOf(country.nameIn(copy.language)),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,

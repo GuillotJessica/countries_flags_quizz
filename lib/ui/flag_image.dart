@@ -19,7 +19,7 @@ class FlagImage extends StatelessWidget {
     final code = country.code.toLowerCase();
     return Image.network(
       'https://flagcdn.com/w640/$code.png',
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       excludeFromSemantics: true,
       loadingBuilder: (context, child, progress) {
         if (progress == null) {

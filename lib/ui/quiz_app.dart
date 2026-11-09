@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:countries_flags_quizz/data/country_repository.dart';
+import 'package:countries_flags_quizz/data/language_store.dart';
 import 'package:countries_flags_quizz/data/score_store.dart';
 import 'package:countries_flags_quizz/game/question.dart';
 import 'package:countries_flags_quizz/game/session.dart';
+import 'package:countries_flags_quizz/language.dart';
 import 'package:countries_flags_quizz/models/country.dart';
 import 'package:countries_flags_quizz/ui/celebration_page.dart';
 import 'package:countries_flags_quizz/ui/flag_image.dart';
@@ -18,6 +20,7 @@ class QuizApp extends StatefulWidget {
     super.key,
     this.countries,
     this.scoreStore,
+    this.languageStore,
     this.random,
     this.feedbackDelay = const Duration(milliseconds: 900),
     this.flagBuilder,
@@ -25,6 +28,7 @@ class QuizApp extends StatefulWidget {
 
   final List<Country>? countries;
   final ScoreStore? scoreStore;
+  final LanguageStore? languageStore;
   final Random? random;
   final Duration feedbackDelay;
   final FlagBuilder? flagBuilder;
@@ -36,19 +40,24 @@ class QuizApp extends StatefulWidget {
 class _QuizAppState extends State<QuizApp> {
   late final Random _random;
   late final ScoreStore _scores;
+  late final LanguageStore _languages;
 
   var _stage = _Stage.loading;
   List<Country> _countries = const [];
   GameSnapshot? _game;
   GameRating? _rating;
   BestScore? _best;
+  var _language = QuizLanguage.english;
   var _improved = false;
+
+  QuizCopy get _copy => QuizCopy(_language);
 
   @override
   void initState() {
     super.initState();
     _random = widget.random ?? Random();
     _scores = widget.scoreStore ?? PrefsScoreStore();
+    _languages = widget.languageStore ?? PrefsLanguageStore();
     _load();
   }
 
@@ -56,22 +65,44 @@ class _QuizAppState extends State<QuizApp> {
     if (mounted && _stage != _Stage.loading) {
       setState(() => _stage = _Stage.loading);
     }
+    QuizLanguage language = _language;
+    try {
+      language = await _languages.read();
+    } catch (_) {
+      // A missing preference still leaves the menu in English.
+    }
     try {
       final countries = widget.countries ?? await loadCountries();
       final best = await _scores.readBest();
       if (!mounted) return;
       if (countries.length < choicesPerQuestion) {
-        setState(() => _stage = _Stage.error);
+        setState(() {
+          _language = language;
+          _stage = _Stage.error;
+        });
         return;
       }
       setState(() {
         _countries = countries;
         _best = best;
+        _language = language;
         _stage = _Stage.ready;
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _stage = _Stage.error);
+      setState(() {
+        _language = language;
+        _stage = _Stage.error;
+      });
+    }
+  }
+
+  Future<void> _chooseLanguage(QuizLanguage language) async {
+    setState(() => _language = language);
+    try {
+      await _languages.save(language);
+    } catch (_) {
+      // The choice still applies to this visit if it cannot be saved.
     }
   }
 
@@ -146,8 +177,9 @@ class _QuizAppState extends State<QuizApp> {
 
   @override
   Widget build(BuildContext context) {
+    final copy = _copy;
     return MaterialApp(
-      title: 'Flag Quiz',
+      title: copy.title,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -176,22 +208,30 @@ class _QuizAppState extends State<QuizApp> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('The country list could not be loaded.'),
+                  Text(copy.loadError),
                   const SizedBox(height: 16),
-                  FilledButton(
-                      onPressed: _load, child: const Text('Try again')),
+                  FilledButton(onPressed: _load, child: Text(copy.tryAgain)),
                 ],
               ),
             ),
           ),
-        _Stage.ready => HomePage(onStart: _start, best: _best),
+        _Stage.ready => HomePage(
+            copy: copy,
+            language: _language,
+            onStart: _start,
+            onLanguage: _chooseLanguage,
+            best: _best,
+            flagBuilder: widget.flagBuilder,
+          ),
         _Stage.playing => PlayPage(
+            copy: copy,
             game: _game!,
             onPick: _pick,
             onStop: _stop,
             flagBuilder: widget.flagBuilder,
           ),
         _Stage.celebrating => CelebrationPage(
+            copy: copy,
             rating: _rating!,
             best: _best,
             isNewBest: _improved,

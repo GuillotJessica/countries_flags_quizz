@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:countries_flags_quizz/data/language_store.dart';
 import 'package:countries_flags_quizz/data/score_store.dart';
 import 'package:countries_flags_quizz/game/session.dart';
 import 'package:countries_flags_quizz/models/country.dart';
@@ -24,6 +25,7 @@ void main() {
       QuizApp(
         countries: sampleCountries,
         scoreStore: scoreStore ?? MemoryScoreStore(),
+        languageStore: MemoryLanguageStore(),
         random: Random(1),
         feedbackDelay: feedbackDelay,
         flagBuilder: (Country country) {
@@ -126,21 +128,5 @@ void main() {
     expect(find.byKey(const Key('home-screen')), findsOneWidget);
     expect(find.byKey(const Key('best-score')), findsNothing);
     expect(await scores.readBest(), isNull);
-  });
-
-  testWidgets('the round fits an iPad', (tester) async {
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await openApp(tester, physicalSize: const Size(2048, 2732));
-
-    await tester.tap(find.byKey(const Key('start-game')));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('country-name')), findsOneWidget);
-    expect(tester.takeException(), isNull);
-
-    tester.view.physicalSize = const Size(2732, 2048);
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
   });
 }

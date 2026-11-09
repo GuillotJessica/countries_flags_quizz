@@ -2,17 +2,20 @@ import 'dart:math';
 
 import 'package:countries_flags_quizz/data/score_store.dart';
 import 'package:countries_flags_quizz/game/session.dart';
+import 'package:countries_flags_quizz/language.dart';
 import 'package:flutter/material.dart';
 
 class CelebrationPage extends StatefulWidget {
   const CelebrationPage({
     super.key,
+    required this.copy,
     required this.rating,
     required this.best,
     required this.isNewBest,
     required this.onPlayAgain,
   });
 
+  final QuizCopy copy;
   final GameRating rating;
   final BestScore? best;
   final bool isNewBest;
@@ -58,6 +61,7 @@ class _CelebrationPageState extends State<CelebrationPage>
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final rating = widget.rating;
+    final copy = widget.copy;
     return Scaffold(
       key: const Key('celebration-screen'),
       body: Stack(
@@ -81,23 +85,24 @@ class _CelebrationPageState extends State<CelebrationPage>
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Well done',
+                        copy.wellDone,
                         key: const Key('well-done'),
                         textAlign: TextAlign.center,
                         style: text.headlineLarge,
                       ),
                       const SizedBox(height: 8),
-                      Text(rating.label, style: text.headlineSmall),
+                      Text(copy.rating(rating.stars),
+                          style: text.headlineSmall),
                       const SizedBox(height: 8),
                       Text(
-                        '${rating.target} flags in ${rating.attempts} tries',
+                        copy.result(rating.target, rating.attempts),
                         key: const Key('result'),
                         textAlign: TextAlign.center,
                         style: text.titleLarge,
                       ),
                       const SizedBox(height: 16),
                       Semantics(
-                        label: '${rating.stars} stars',
+                        label: copy.stars(rating.stars),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -115,7 +120,7 @@ class _CelebrationPageState extends State<CelebrationPage>
                       if (widget.isNewBest) ...[
                         const SizedBox(height: 12),
                         Text(
-                          'New best',
+                          copy.newBest,
                           key: const Key('new-best'),
                           style: text.titleMedium?.copyWith(
                             fontWeight: FontWeight.w700,
@@ -123,7 +128,7 @@ class _CelebrationPageState extends State<CelebrationPage>
                         ),
                       ] else if (widget.best != null) ...[
                         const SizedBox(height: 12),
-                        Text('Best game: ${widget.best!.attempts} tries'),
+                        Text(copy.best(widget.best!.attempts)),
                       ],
                       const SizedBox(height: 32),
                       FilledButton(
@@ -136,7 +141,7 @@ class _CelebrationPageState extends State<CelebrationPage>
                           ),
                         ),
                         onPressed: widget.onPlayAgain,
-                        child: const Text('New game'),
+                        child: Text(copy.newGame),
                       ),
                     ],
                   ),
