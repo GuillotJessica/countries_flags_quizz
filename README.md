@@ -78,6 +78,8 @@ flutter test integration_test/play_test.dart -d "iPad Pro 13-inch (M5)"
 
 Chrome cannot run that device test. The browser layout is covered by `flutter test`.
 
+GitHub runs the formatter, the analyzer, and the tests on every push and pull request. It also builds the web app and an Android debug app.
+
 ## Project layout
 
 | Path | What it is |
