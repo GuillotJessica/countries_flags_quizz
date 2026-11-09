@@ -8,10 +8,6 @@ The menu has flag buttons for English, Swedish, and French. Country names and th
 
 ![Flag Quiz home](screenshots/home.png)
 
-A wrong flag stays on screen long enough to see the right one, outlined in green.
-
-![A round in progress](screenshots/play.png)
-
 ![Well done](screenshots/well-done.png)
 
 ## Score
