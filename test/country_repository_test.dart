@@ -43,7 +43,7 @@ void main() {
     );
     expect(
       countries.map((country) => country.code),
-      containsAll(['FR', 'SE', 'JP']),
+      containsAll(['FR', 'SE', 'JP', 'BQ', 'CW', 'TC', 'VG', 'VI', 'XK']),
     );
   });
 }
