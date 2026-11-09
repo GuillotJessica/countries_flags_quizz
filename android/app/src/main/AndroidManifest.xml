@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="countries_flags_quizz"
+        android:label="Flag Quiz"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,12 +1,12 @@
 {
-    "name": "countries_flags_quizz",
-    "short_name": "countries_flags_quizz",
+    "name": "Flag Quiz",
+    "short_name": "Flag Quiz",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#F7F4EF",
+    "theme_color": "#2563EB",
+    "description": "Find 5 flags. Fewer tries makes a better game.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {
