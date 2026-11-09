@@ -1,6 +1,6 @@
 # Flag Quiz
 
-A small flag game for a child. It is meant to be played on an iPad, and it also runs in a browser.
+A small flag game for a child. It is meant to be played on an iPad, and it also runs on Android and in a browser.
 
 A round shows a country name and three flags. The round ends at 5 correct answers. A wrong tap stays in the round, and the score is how many tries those 5 answers took. Fewer tries is a better game. A perfect round is 5 tries.
 
@@ -50,6 +50,8 @@ If more than one device is listed, pick it:
 ```sh
 flutter run -d "iPad Pro 13-inch (M5)"
 ```
+
+On Android, start an emulator or plug in a phone. `flutter devices` lists it. Start the app with `flutter run -d <device-id>`.
 
 In a browser:
 
